@@ -8,3 +8,5 @@ python-Levenshtein==0.12.0
 requests==2.22.0
 spacy==2.1.4
 webweb==0.0.32
+google-cloud-bigquery
+google-cloud-storage
