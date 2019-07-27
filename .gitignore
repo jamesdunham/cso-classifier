@@ -104,3 +104,6 @@ attempts.py
 .DS_Store
 .idea/
 __pycache__
+
+# credentials
+GCP-*.json
