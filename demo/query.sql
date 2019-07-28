@@ -1,3 +1,4 @@
+--- Select some CS paper titles, abstracts, and keywords
 with abstract as (
     select id,
            string_agg(paragraph_text) as abstract_text

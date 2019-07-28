@@ -1,3 +1,9 @@
+"""
+Request query results from BigQuery.
+
+References:
+    - https://googleapis.github.io/google-cloud-python/latest/storage/buckets.html
+"""
 from google.cloud import bigquery
 
 from demo.settings import DEMO_DIR
