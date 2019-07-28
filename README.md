@@ -1,6 +1,4 @@
-# CSO-Classifier
-
-[![PyPI version](https://badge.fury.io/py/cso-classifier.svg)](https://badge.fury.io/py/cso-classifier) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2660819.svg)](https://doi.org/10.5281/zenodo.2660819)
+# CSO Classifier
 
 ## Abstract
 
@@ -41,195 +39,11 @@ The CSO Classifier is a novel application that takes as input the text from abst
 
 ## Getting started
 
-### Installation using PIP
-
-1. Ensure you have **Python 3.6** or above installed. Download [latest version](https://www.python.org/downloads/).
-2. Use pip to install the classifier: ```pip install cso-classifier```
-3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
-
-### Installation using Github
+### Installation
 
 1. Ensure you have [**Python 3.6**](https://www.python.org/downloads/) or above installed.
 2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
 3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
-
-## Usage examples
-
-In this section, we explain how to run the CSO Classifier to classify a single or multiple (_batch mode_) papers.
-
-### Classifying a single paper (SP)
-
-#### Sample Input (SP)
-
-The sample input is a dictionary containing title, abstract and keywords as keys:
-```json
-paper = {
-        "title": "De-anonymizing Social Networks",
-        "abstract": "Operators of online social networks are increasingly sharing potentially "
-            "sensitive information about users and their relationships with advertisers, application "
-            "developers, and data-mining researchers. Privacy is typically protected by anonymization, "
-            "i.e., removing names, addresses, etc. We present a framework for analyzing privacy and "
-            "anonymity in social networks and develop a new re-identification algorithm targeting "
-            "anonymized social-network graphs. To demonstrate its effectiveness on real-world networks, "
-            "we show that a third of the users who can be verified to have accounts on both Twitter, a "
-            "popular microblogging service, and Flickr, an online photo-sharing site, can be re-identified "
-            "in the anonymous Twitter graph with only a 12% error rate. Our de-anonymization algorithm is "
-            "based purely on the network topology, does not require creation of a large number of dummy "
-            "\"sybil\" nodes, is robust to noise and all existing defenses, and works even when the overlap "
-            "between the target network and the adversary's auxiliary information is small.",
-        "keywords": "data mining, data privacy, graph theory, social networking (online)"
-        }
-```
-
-#### Run (SP)
-
-Just import the classifier and run it:
-
-```python
-import classifier.classifier as CSO
-result = CSO.run_cso_classifier(paper, modules = "both", enhancement = "first")
-print(result)
-```
-
-To observe the available settings please refer to the [Parameters](#parameters) section.
-
-#### Sample Output (SP)
-
-As output the classifier returns a dictionary with four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
-
-```json
-{
-    "syntactic": [
-        "twitter",
-        "sensitive informations",
-        "graph theory",
-        "data mining",
-        "online social networks",
-        "real-world networks",
-        "privacy",
-        "social networks",
-        "micro-blog",
-        "anonymization",
-        "data privacy",
-        "topology",
-        "anonymity"
-    ],
-    "semantic": [
-        "social networks",
-        "online social networks",
-        "sensitive informations",
-        "data mining",
-        "privacy",
-        "data privacy",
-        "anonymization",
-        "anonymity",
-        "twitter",
-        "micro-blog",
-        "topology",
-        "graph theory",
-        "social media",
-        "social networking sites",
-        "network architecture",
-        "online communities",
-        "social graphs"
-    ],
-    "union": [
-        "twitter",
-        "social media",
-        "sensitive informations",
-        "graph theory",
-        "data mining",
-        "online social networks",
-        "real-world networks",
-        "privacy",
-        "social networks",
-        "micro-blog",
-        "anonymity",
-        "social networking sites",
-        "network architecture",
-        "online communities",
-        "social graphs",
-        "anonymization",
-        "data privacy",
-        "topology"
-    ],
-    "enhanced": [
-        "network protocols",
-        "theoretical computer science",
-        "complex networks",
-        "online systems",
-        "privacy preserving",
-        "computer science",
-        "access control",
-        "security of data",
-        "network security",
-        "world wide web",
-        "authentication"
-    ]
-}
-```
-
-### Classifying in batch mode (BM)
-
-#### Sample Input (BM)
-
-The sample input is a dictionary of dictionaries. Each key is a paper id (example id1, see below) and its value is itself a dictionary containing title, abstract and keywords.
-
-```json
-papers = {
-    "id1": {
-        "title": "De-anonymizing Social Networks",
-        "abstract": "Operators of online social networks are increasingly sharing potentially sensitive information about users and their relationships with advertisers, application developers, and data-mining researchers. Privacy is typically protected by anonymization, i.e., removing names, addresses, etc. We present a framework for analyzing privacy and anonymity in social networks and develop a new re-identification algorithm targeting anonymized social-network graphs. To demonstrate its effectiveness on real-world networks, we show that a third of the users who can be verified to have accounts on both Twitter, a popular microblogging service, and Flickr, an online photo-sharing site, can be re-identified in the anonymous Twitter graph with only a 12% error rate. Our de-anonymization algorithm is based purely on the network topology, does not require creation of a large number of dummy \"sybil\" nodes, is robust to noise and all existing defenses, and works even when the overlap between the target network and the adversary's auxiliary information is small.",
-        "keywords": "data mining, data privacy, graph theory, social networking (online)"
-    },
-    "id2": {
-        "title": "Title of sample paper id2",
-        "abstract": "Abstract of sample paper id2",
-        "keywords": "keyword1, keyword2, ..., keywordN"
-    }
-}
-```
-
-#### Run (BM)
-
-Import the python script and run the classifier:
-
-```python
-import classifier.classifier as CSO
-result = CSO.run_cso_classifier_batch_mode(papers, workers = 1, modules = "both", enhancement = "first")
-print(result)
-```
-
-To observe the available settings please refer to the [Parameters](#parameters) section.
-
-#### Sample Output (BM)
-
-As output the classifier returns a dictionary of dictionaries. For each classified paper (identified by their id), it returns a dictionary containing four components: (i) syntactic, (ii) semantic, (iii) union, and (iv) enhanced. Below you can find an example. The keys syntactic and semantic respectively contain the topics returned by the syntacic and semantic module. Union contains the unique topics found by the previous two modules. In ehancement you can find the relevant super-areas. *Please be aware that the results may change according to the version of Computer Science Ontology.*
-
-```json
-{
-    "id1": {
-    "syntactic": [
-        "twitter", "sensitive informations", "graph theory", "data mining", "online social networks", "real-world networks", "privacy", "social networks", "micro-blog", "anonymization", "data privacy", "topology", "anonymity"
-    ],
-    "semantic": [
-        "social networks", "online social networks", "sensitive informations", "data mining", "privacy", "data privacy", "anonymization", "anonymity", "twitter", "micro-blog", "topology", "graph theory", "social media", "social networking sites", "network architecture", "online communities", "social graphs"
-    ],
-    "union": [
-        "twitter", "social media", "sensitive informations", "graph theory", "data mining", "online social networks", "real-world networks", "privacy", "social networks", "micro-blog", "anonymity", "social networking sites", "network architecture", "online communities", "social graphs", "anonymization", "data privacy", "topology"
-    ],
-    "enhanced": [
-        "network protocols", "theoretical computer science", "complex networks", "online systems", "privacy preserving", "computer science", "access control", "security of data", "network security", "world wide web", "authentication"
-    ]
-},
-    "id2": {
-        "syntactic": [...],
-        "semantic": [...],
-        "union": [...],
-        "enhanced": [...]
-    }
-}
-```
 
 ### Parameters
 Beside the paper(s), the function running the CSO Classifier accepts three additional parameters: (i) **workers**, (ii) **modules**, and (iii) **enhancement**. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier.
@@ -275,24 +89,11 @@ Download from:
 
 ### v2.0
 
-The second version (v2.0) implements the CSO Classifier as described in the [about section](#about). It combines the results of the syntactic and semantic modules, and then it enriches it with their supertopics. Compared to [v1.0](#v10), it adds a semantic layer that allows to generate a more comprehensive result, identifying research topics that are not explicitely available in the metadata. The semantic module relies on a Word2vec model trained on over 4.5M papers in _Computer Science_. [Below](#word-embedding-generation) we show more in detail how we trained such model. In this version of the classifier, we [pickled](https://docs.python.org/3.6/library/pickle.html) the model to speed-up the process of loading into memory (~4.5 times faster).
-
 > Salatino, A.A., Osborne, F., Thanapalasingam, T., Motta, E.: The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles. In: TPDL 2019: 23rd International Conference on Theory and Practice of Digital Libraries. Springer. [Read More](http://oro.open.ac.uk/62026/)
-
-Download from:
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2661834.svg)](https://doi.org/10.5281/zenodo.2661834)
 
 ### v1.0
 
-The first version (v1.0) of the CSO Classifier is an implementations of the syntactic module, which was also previously used to support the semi-automatic annotation of proceedings at Springer Nature [[1]](#references). This classifier aims at syntactically match n-grams (unigrams, bigrams and trigrams) of the input document with concepts within CSO.
-
-More details about this version of the classifier can be found within: 
 > Salatino, A.A., Thanapalasingam, T., Mannocci, A., Osborne, F. and Motta, E. 2018. Classifying Research Papers with the Computer Science Ontology. ISWC-P&D-Industry-BlueSky 2018 (2018). [Read more](http://oro.open.ac.uk/55908/)
-
-Download from:
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2661834.svg)](https://doi.org/10.5281/zenodo.2661834)
 
 ## List of Files
 
