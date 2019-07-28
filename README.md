@@ -1,34 +1,17 @@
 # CSO Classifier
 
-## Abstract
+## CSET demo
 
-Classifying research papers according to their research topics is an important task to improve their retrievability, assist the creation of smart analytics, and support a variety of approaches for analysing and making sense of the research environment. In this repository, we present the CSO Classifier, a new unsupervised approach for automatically classifying research papers according to the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk), a comprehensive ontology of research areas in the field of Computer Science. The CSO Classifier takes as input the metadata associated with a research paper (title, abstract, keywords) and returns a selection of research concepts drawn from the ontology. The approach was evaluated on a gold standard of manually annotated articles yielding a significant improvement over alternative methods.
+This demo fetches a set of CS paper titles, abstracts, and keywords from Web of Science BigQuery tables, and runs the CSO Classifier over them.
 
-## Table of contents
+Predictions are written to `demo/demo-predictions.jsonl`.  
 
-<!--ts-->
-* [Abstract](#abstract)
-* [Table of contents](#table-of-contents)
-* [About](#about)
-* [Getting started](#getting-started)
-  * [Installation using PIP](#installation-using-pip)
-  * [Installation using Github](#installation-using-github)
-* [Usage examples](#usage-examples)
-  * [Classifying a single paper (SP)](#classifying-a-single-paper-sp)
-  * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
-  * [Parameters](#parameters)
-* [Releases](#releases)
-  * [v2.2](#v22)
-  * [v2.1](#v21)
-  * [v2.0](#v20)
-  * [v1.0](#v10)
-* [List of Files](#list-of-files)
-* [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
-  * [Word Embedding generation](#word-embedding-generation)
-  * [token-to-cso-combined file](#token-to-cso-combined-file)
-* [License](#license)
-* [References](#references)
-<!--te-->
+- Clone this repo
+- Download a keyfile for a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts?project=gcp-cset-projects&folder&organizationId=266927719261) with BigQuery access into the project root
+- Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of that keyfile, which will look like `"GCP-CSET Projects-c92bab68a1d4.json"`
+- `pip install -r requirements.txt` (Python >= 3.6)
+- `python -m spacy download en_core_web_sm`
+- `python main.py`
 
 ## About
 
@@ -37,15 +20,7 @@ The CSO Classifier is a novel application that takes as input the text from abst
 ![Framework of CSO Classifier](https://github.com/angelosalatino/cso-classifier/raw/master/images/Workflow.png "Framework of CSO Classifier")
 **Figure 1**: Framework of CSO Classifier
 
-## Getting started
-
-### Installation
-
-1. Ensure you have [**Python 3.6**](https://www.python.org/downloads/) or above installed.
-2. Install the necessary depepencies by executing the following command:```pip install -r requirements.txt```
-3. Download English package for spaCy using ```python -m spacy download en_core_web_sm```
-
-### Parameters
+## Parameters
 Beside the paper(s), the function running the CSO Classifier accepts three additional parameters: (i) **workers**, (ii) **modules**, and (iii) **enhancement**. Here we explain their usage. The workers parameters is an integer (equal or greater than 1), modules and enhancement are strings that define a particular behaviour for the classifier.
 
 (1) The parameter *workers* defines the number of thread to run for classifying the input corpus. For instance, if workers is set to 4. There will be 4 instances of the CSO Classifier, each one receiving a chunk (equally split) of the corpus to process. Once all processes are completed, the results will be aggregated and returned. The default value for *workers* is *1*. This parameter is available only in *batch mode*.
