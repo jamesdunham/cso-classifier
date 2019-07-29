@@ -4,8 +4,6 @@
 
 This demo fetches a set of CS paper titles, abstracts, and keywords from Web of Science BigQuery tables, and runs the CSO Classifier over them.
 
-Predictions are written to `demo/demo-predictions.jsonl`.  
-
 - Clone this repo
 - `pip install -r requirements.txt` (Python >= 3.6)
 - `python -m spacy download en_core_web_sm`
@@ -13,6 +11,50 @@ Predictions are written to `demo/demo-predictions.jsonl`.
 - Download a keyfile for a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts/details/108948885901935517907?organizationId=266927719261&project=gcp-cset-projects) with BigQuery access into the project root
 - Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of that keyfile, which will look like `"GCP-CSET Projects-b314d1aa5d86.json"`
 - Run `python main.py` (e.g., `GOOGLE_APPLICATION_CREDENTIALS='gcp-cset-projects-b314d1aa5d86.json' python main.py`)
+
+Predictions are written to `demo/demo-predictions.jsonl`.
+An excerpt of that file is below, with Web of Science data (`title`, `abstract_text`, `keywords`) omitted:
+
+```JSON
+{
+  "WOS:000179316500010": {
+    "abstract_text": "[...]",
+    "enhanced": [
+      "fuzzy neural networks",
+      "fuzzy systems",
+      "fuzzy sets",
+      "decision tables",
+      "formal methods",
+      "model checking"
+    ],
+    "keywords": "[...]",
+    "semantic": [
+      "rough set theory",
+      "attribute reduction",
+      "rough approximations",
+      "variable precision rough sets",
+      "knowledge reduction"
+    ],
+    "syntactic": [
+      "fuzzy-neural",
+      "z"
+    ],
+    "title": "[omitted]",
+    "union": [
+      "fuzzy-neural",
+      "knowledge reduction",
+      "rough set theory",
+      "rough approximations",
+      "attribute reduction",
+      "z",
+      "variable precision rough sets"
+    ]
+  },
+  "WOS:000180391800004": {
+  [...]
+  }
+}
+```
 
 ## About
 
