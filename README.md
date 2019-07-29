@@ -7,11 +7,12 @@ This demo fetches a set of CS paper titles, abstracts, and keywords from Web of 
 Predictions are written to `demo/demo-predictions.jsonl`.  
 
 - Clone this repo
-- Download a keyfile for a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts?project=gcp-cset-projects&folder&organizationId=266927719261) with BigQuery access into the project root
-- Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of that keyfile, which will look like `"GCP-CSET Projects-c92bab68a1d4.json"`
 - `pip install -r requirements.txt` (Python >= 3.6)
 - `python -m spacy download en_core_web_sm`
-- `python main.py`
+- `python -m nltk.downloader stopwords`
+- Download a keyfile for a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts/details/108948885901935517907?organizationId=266927719261&project=gcp-cset-projects) with BigQuery access into the project root
+- Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of that keyfile, which will look like `"GCP-CSET Projects-b314d1aa5d86.json"`
+- Run `python main.py` (e.g., `GOOGLE_APPLICATION_CREDENTIALS='gcp-cset-projects-b314d1aa5d86.json' python main.py`)
 
 ## About
 
