@@ -107,3 +107,4 @@ __pycache__
 
 # credentials
 GCP-*.json
+gcp-*.json
