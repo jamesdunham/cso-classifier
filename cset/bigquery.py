@@ -29,7 +29,7 @@ def flatten_row(row):
 def flatten(result):
     papers = {}
     for row in result:
-        keywords = ', '.join([kw.replace(',', '') for kw in row['keywords']])
+        keywords = ', '.join([kw.replace(',', '') for kw in row.get('keywords', [])])
         paper = dict(row)
         paper.update(keywords=keywords)
         papers[paper.pop('id')] = paper
