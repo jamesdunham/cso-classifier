@@ -8,19 +8,20 @@ Created on Thu Nov 22 08:45:29 2018
 This file mostly contains routines to deal with the Computer Science Ontology and the model.
 """
 
-import pickle
-import os
-import sys
-import requests
-import networkx as nx
-from webweb import Web
-import numpy as np
-from hurry.filesize import size
 import csv as co
 import json
+import os
+import pickle
+import sys
 from itertools import islice
 
-#some global variables
+import networkx as nx
+import numpy as np
+import requests
+from hurry.filesize import size
+from webweb import Web
+
+# some global variables
 dir = os.path.dirname(os.path.realpath(__file__))
 CSO_PATH = f"{dir}/models/cso.csv"
 CSO_PICKLE_PATH = f"{dir}/models/cso.p"
@@ -29,6 +30,7 @@ MODEL_PICKLE_PATH = f"{dir}/models/model.p"
 MODEL_PICKLE_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/model.p"
 CACHED_MODEL = f"{dir}/models/token-to-cso-combined.json"
 CACHED_MODEL_REMOTE_URL = "https://cso.kmi.open.ac.uk/download/token-to-cso-combined.json"
+
 
 def load_cso():
     """Function that loads the CSO from the file in a dictionary.
@@ -92,17 +94,14 @@ def load_cso():
         'topics_wu': topics_wu,
         'primary_labels_wu': primary_labels_wu
     }
-    
-        
-        
+
     return cso
-        
+
 
 def load_token2cso_merger():
-    #print("Loading Model to CSO Merger")
+    # print("Loading Model to CSO Merger")
     with open(CACHED_MODEL) as f:
-       return json.load(f)
-
+        return json.load(f)
 
 
 def load_ontology_pickle():
@@ -115,7 +114,7 @@ def load_ontology_pickle():
         fcso (dictionary): contains the CSO Ontology.
     """
     check_ontology()
-    fcso = pickle.load( open( CSO_PICKLE_PATH, "rb" ) )
+    fcso = pickle.load(open(CSO_PICKLE_PATH, "rb"))
     return fcso
 
 
@@ -130,13 +129,13 @@ def load_ontology_and_model():
         fcso (dictionary): contains the CSO Ontology.
         fmodel (dictionary): contains the word2vec model.
     """
-    
+
     check_ontology()
     check_model()
-    
-    fcso = pickle.load( open( CSO_PICKLE_PATH, "rb" ) )
-    fmodel = pickle.load( open( MODEL_PICKLE_PATH, "rb" ) )
-    
+
+    fcso = pickle.load(open(CSO_PICKLE_PATH, "rb"))
+    fmodel = pickle.load(open(MODEL_PICKLE_PATH, "rb"))
+
     print("Computer Science Ontology and Word2vec model loaded.")
     return fcso, fmodel
 
@@ -154,60 +153,61 @@ def load_ontology_and_chached_model():
         fcso (dictionary): contains the CSO Ontology.
         fmodel (dictionary): contains a cache of the model, i.e., each token is linked to the corresponding CSO topic.
     """
-    
+
     check_ontology()
     check_cached_model()
-    
-    fcso = pickle.load( open( CSO_PICKLE_PATH, "rb" ) )
-    
+
+    fcso = pickle.load(open(CSO_PICKLE_PATH, "rb"))
+
     with open(CACHED_MODEL) as f:
-       fmodel =  json.load(f)
-    
+        fmodel = json.load(f)
+
     print("Computer Science Ontology and cached model loaded.")
     return fcso, fmodel
 
-     
+
 def check_ontology():
     """Function that checks if the ontology is available. 
     If not, it will check if a csv version exists and then it will create the pickle file.
     
-    """ 
-    
+    """
+
     if not os.path.exists(CSO_PICKLE_PATH):
         print("Ontology pickle file is missing.")
-        
+
         if not os.path.exists(CSO_PATH):
             print("The csv file of the Computer Science Ontology is missing. Attempting to download it now...")
-            download_file(CSO_REMOTE_URL, CSO_PATH) 
-        
+            download_file(CSO_REMOTE_URL, CSO_PATH)
+
         cso = load_cso()
-        
+
         with open(CSO_PICKLE_PATH, 'wb') as cso_file:
-            print("Creating ontology pickle file from a copy of the CSO Ontology found in",CSO_PATH)
+            print("Creating ontology pickle file from a copy of the CSO Ontology found in", CSO_PATH)
             pickle.dump(cso, cso_file)
-            
+
 
 def check_model():
     """Function that checks if the model is available. If not, it will attempt to download it from a remote location.
     Tipically hosted on the CSO Portal.
 
     """
-    
+
     if not os.path.exists(MODEL_PICKLE_PATH):
         print('[*] Beginning model download from', MODEL_PICKLE_REMOTE_URL)
-        download_file(MODEL_PICKLE_REMOTE_URL, MODEL_PICKLE_PATH)  
+        download_file(MODEL_PICKLE_REMOTE_URL, MODEL_PICKLE_PATH)
+
 
 def check_cached_model():
     """Function that checks if the cached model is available. If not, it will attempt to download it from a remote location.
     Tipically hosted on the CSO Portal.
 
     """
-    
+
     if not os.path.exists(CACHED_MODEL):
         print('[*] Beginning download of cached model from', CACHED_MODEL_REMOTE_URL)
-        download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL) 
-        
-        
+        download_file(CACHED_MODEL_REMOTE_URL, CACHED_MODEL)
+
+
 def download_file(url, filename):
     """Function that downloads the model from the web.
 
@@ -223,86 +223,85 @@ def download_file(url, filename):
         total = response.headers.get('content-length')
 
         if total is None:
-            #f.write(response.content)
+            # f.write(response.content)
             print('There was an error while downloading the new version of the ontology.')
         else:
             downloaded = 0
             total = int(total)
-            for data in response.iter_content(chunk_size=max(int(total/1000), 1024*1024)):
+            for data in response.iter_content(chunk_size=max(int(total / 1000), 1024 * 1024)):
                 downloaded += len(data)
                 f.write(data)
-                done = int(50*downloaded/total)
-                sys.stdout.write('\r[{}{}] {}/{}'.format('█' * done, '.' * (50-done), size(downloaded), size(total)))
+                done = int(50 * downloaded / total)
+                sys.stdout.write('\r[{}{}] {}/{}'.format('█' * done, '.' * (50 - done), size(downloaded), size(total)))
                 sys.stdout.flush()
             sys.stdout.write('\n')
             print('[*] Done!')
 
 
 def get_primary_label(topic, primary_labels):
-        """Function that returns the primary (preferred) label for a topic. If this topic belongs to 
-        a cluster.
+    """Function that returns the primary (preferred) label for a topic. If this topic belongs to
+    a cluster.
 
-        Args:
-            topic (string): Topic to analyse.
-            primary_labels (dictionary): It contains the primary labels of all the topics belonging to clusters.
+    Args:
+        topic (string): Topic to analyse.
+        primary_labels (dictionary): It contains the primary labels of all the topics belonging to clusters.
 
-        Returns:
-            topic (string): primary label of the analysed topic.
-        """
-        
-        try:
-            topic = primary_labels[topic]
-        except KeyError:
-            pass
-        
-        return topic
+    Returns:
+        topic (string): primary label of the analysed topic.
+    """
+
+    try:
+        topic = primary_labels[topic]
+    except KeyError:
+        pass
+
+    return topic
 
 
 def climb_ontology(cso, found_topics, climb_ont):
-        """Function that climbs the ontology. This function might retrieve
-            just the first broader topic or the whole branch up until root
-        Args:
-            found_topics (dictionary): It contains the topics found with string similarity.
-            cso (dictionary): the ontology previously loaded from the file.
-            climb_ont (string): either "first" or "all" for selecting "just the first broader topic" or climbing
-            the "whole tree".
-        Returns:
-            found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
-        """
+    """Function that climbs the ontology.
 
-        all_broaders = {}
-        inferred_topics = {}
-        num_narrower = 1
+    This function might retrieve just the first broader topic or the whole branch up until root .
 
-        if climb_ont == 'first':
+    Args:
+        found_topics (dictionary): It contains the topics found with string similarity.
+        cso (dictionary): the ontology previously loaded from the file.
+        climb_ont (string): either "first" or "all" for selecting "just the first broader topic" or climbing
+        the "whole tree".
+    Returns:
+        found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
+    """
+
+    all_broaders = {}
+    inferred_topics = {}
+    num_narrower = 1
+
+    if climb_ont == 'first':
+        all_broaders = get_broader_of_topics(cso, found_topics, all_broaders)
+    elif climb_ont == 'all':
+        while True:
+            """
+            recursively adding new broaders based on the current list of topics. Broaders var increases each 
+            iteration. It stops when it does not change anymore.
+            """
+            all_broaders_back = all_broaders.copy()
             all_broaders = get_broader_of_topics(cso, found_topics, all_broaders)
-        elif climb_ont == 'all':
-            while True:
-                """
-                recursively adding new broaders based on the current list of topics. Broaders var increases each 
-                iteration. It stops when it does not change anymore.
-                """
-                all_broaders_back = all_broaders.copy()
-                all_broaders = get_broader_of_topics(cso, found_topics, all_broaders)
-                if all_broaders_back == all_broaders:  # no more broaders have been found
-                    break
-        elif climb_ont == 'no':
-            return inferred_topics #it is empty at this stage
-        else:
-            raise ValueError("Error: Field climb_ontology must be 'first', 'all' or 'no'")
-            return
-        
-        
-        for broader, narrower in all_broaders.items():
-            if len(narrower) >= num_narrower:
-                broader = get_primary_label(broader, cso['primary_labels'])
-                if broader not in inferred_topics:
-                    inferred_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
-                else:
-                    inferred_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
+            if all_broaders_back == all_broaders:  # no more broaders have been found
+                break
+    elif climb_ont == 'no':
+        return inferred_topics  # it is empty at this stage
+    else:
+        raise ValueError("Error: Field climb_ontology must be 'first', 'all' or 'no'")
 
-        return inferred_topics
+    for broader, narrower in all_broaders.items():
+        if len(narrower) >= num_narrower:
+            broader = get_primary_label(broader, cso['primary_labels'])
+            if broader not in inferred_topics:
+                inferred_topics[broader] = [{'matched': len(narrower), 'broader of': narrower}]
+            else:
+                inferred_topics[broader].append({'matched': len(narrower), 'broader of': narrower})
 
+    return inferred_topics
 
 
 def get_broader_of_topics(cso, found_topics, all_broaders):
@@ -336,13 +335,15 @@ def get_broader_of_topics(cso, found_topics, all_broaders):
 
     return all_broaders
 
+
 def chunks(data, size):
     """Yield successive n-sized chunks from l."""
-    
+
     # https://stackoverflow.com/questions/22878743/how-to-split-dictionary-into-multiple-dictionaries-fast
     it = iter(data)
     for i in range(0, len(data), size):
-        yield {k:data[k] for k in islice(it, size)}
+        yield {k: data[k] for k in islice(it, size)}
+
 
 def get_network(cso, found_topics):
     """Function that extracts the network from a given set of topics.
@@ -353,43 +354,41 @@ def get_network(cso, found_topics):
     Returns:
         network (dictionary): = {"nodes":nodes, "edges":edges} contains the list of nodes and edges of the extracetd network.
     """
-    
+
     if type(found_topics) is dict:
         list_of_topics = []
         for key, value in found_topics.items():
             list_of_topics += value
-        
+
         list_of_topics = list(set(list_of_topics))
     elif type(found_topics) is list:
         list_of_topics = found_topics
-        
+
     from collections import deque
     topics = []
     for topic in list_of_topics:
         if topic in cso["topics"]:
             topics.append(topic)
-        else: 
-            print("Asked to process '",topic,"', but I couldn't find it in the current version of the Ontology")
+        else:
+            print("Asked to process '", topic, "', but I couldn't find it in the current version of the Ontology")
 
     nodes = []
     edges = []
-    
-    
-    nodes.append({"id":"paper", "label":"paper"})
+
+    nodes.append({"id": "paper", "label": "paper"})
     t_id = 0
     pos = {}
     for topic in topics:
         pos[topic] = t_id
         pos[t_id] = topic
-        temp={"id":"topic"+str(t_id), "label":topic}
+        temp = {"id": "topic" + str(t_id), "label": topic}
         nodes.append(temp)
         t_id += 1
-    
-    
-    matrix = np.ones((len(topics),len(topics)), dtype=int)*999
+
+    matrix = np.ones((len(topics), len(topics)), dtype=int) * 999
     queue = deque()
     for topic in topics:
-        queue.append({"t":topic,"d":1})
+        queue.append({"t": topic, "d": 1})
         while len(queue) > 0:
             dequeued = queue.popleft()
             if dequeued["t"] in cso["broaders"]:
@@ -397,28 +396,25 @@ def get_network(cso, found_topics):
                 for broader in broaders:
                     if broader in pos:
                         matrix[pos[topic]][pos[broader]] = dequeued["d"]
-                    queue.append({"t":broader,"d":dequeued["d"]+1})
-    
-    
+                    queue.append({"t": broader, "d": dequeued["d"] + 1})
+
     for topic in topics:
         nearest_min = matrix[pos[topic]].min()
         nearest_pos = np.where(matrix[pos[topic]] == nearest_min)[0]
-        
-        if(nearest_min == 1):
+
+        if (nearest_min == 1):
             for near in nearest_pos:
-                edge = {"id":"edge","source":topic,"target":pos[near],"kind":"hard"}
+                edge = {"id": "edge", "source": topic, "target": pos[near], "kind": "hard"}
                 edges.append(edge)
-        elif(nearest_min > 1 and nearest_min < 999):
+        elif (nearest_min > 1 and nearest_min < 999):
             for near in nearest_pos:
-                edge = {"id":"edge","source":topic,"target":pos[near],"kind":"soft"}
+                edge = {"id": "edge", "source": topic, "target": pos[near], "kind": "soft"}
                 edges.append(edge)
         else:
-            edge = {"id":"edge","source":topic,"target":"paper","kind":"conn"}
+            edge = {"id": "edge", "source": topic, "target": "paper", "kind": "conn"}
             edges.append(edge)
-        
-        
-    
-    network = {"nodes":nodes, "edges":edges}
+
+    network = {"nodes": nodes, "edges": edges}
     return network
 
 
@@ -433,46 +429,37 @@ def plot_network(network):
     Returns:
         
         """
-    
+
     G = nx.DiGraph()
-    labels={}
+    labels = {}
     for node in network["nodes"]:
         G.add_node(node["label"])
-        labels[node["label"]] = r'$'+node["label"]+'$'
-        
-        
+        labels[node["label"]] = r'$' + node["label"] + '$'
+
     for edge in network["edges"]:
-        G.add_edge(edge["source"],edge["target"],kind=edge["kind"])
-        
-      
-        
+        G.add_edge(edge["source"], edge["target"], kind=edge["kind"])
+
     pos = nx.spring_layout(G)
-    
-    
-        
-    hard=[(u,v) for (u,v,d) in G.edges(data=True) if d['kind'] == "hard"]
-    soft=[(u,v) for (u,v,d) in G.edges(data=True) if d['kind'] == "soft"]
-    conn=[(u,v) for (u,v,d) in G.edges(data=True) if d['kind'] == "conn"]
-    
-    
-    remain = [i for i in G.nodes() if i!="paper"]  
-    nx.draw_networkx_nodes(G,pos, nodelist=["paper"], node_color='orange',node_shape = 's', node_size=500, alpha=1)
-    nx.draw_networkx_nodes(G,pos, nodelist=remain, node_color='#167096',node_shape = 'o', node_size=100, alpha=1)
-    
-    
-    
-    nx.draw_networkx_edges(G,pos,edgelist=hard,width=1)
-    nx.draw_networkx_edges(G,pos,edgelist=soft,width=1,alpha=0.5,style='dashed')
-    nx.draw_networkx_edges(G,pos,edgelist=conn,width=1,edge_color='black')
-    
-    nx.draw_networkx_labels(G,pos,font_size=9,font_family='sans-serif')
-    
-    import matplotlib.pyplot as plt  
+
+    hard = [(u, v) for (u, v, d) in G.edges(data=True) if d['kind'] == "hard"]
+    soft = [(u, v) for (u, v, d) in G.edges(data=True) if d['kind'] == "soft"]
+    conn = [(u, v) for (u, v, d) in G.edges(data=True) if d['kind'] == "conn"]
+
+    remain = [i for i in G.nodes() if i != "paper"]
+    nx.draw_networkx_nodes(G, pos, nodelist=["paper"], node_color='orange', node_shape='s', node_size=500, alpha=1)
+    nx.draw_networkx_nodes(G, pos, nodelist=remain, node_color='#167096', node_shape='o', node_size=100, alpha=1)
+
+    nx.draw_networkx_edges(G, pos, edgelist=hard, width=1)
+    nx.draw_networkx_edges(G, pos, edgelist=soft, width=1, alpha=0.5, style='dashed')
+    nx.draw_networkx_edges(G, pos, edgelist=conn, width=1, edge_color='black')
+
+    nx.draw_networkx_labels(G, pos, font_size=9, font_family='sans-serif')
+
+    import matplotlib.pyplot as plt
     plt.axis('off')
     plt.show()
-    
-    
-    
+
+
 def plot_network2(network):
     """Function that plots the network of topics.
         It mainly relies on webweb: https://github.com/dblarremore/webweb
@@ -484,27 +471,26 @@ def plot_network2(network):
     Returns:
         
         """
-    
+
     G = nx.Graph()
     for node in network["nodes"]:
         G.add_node(node["label"])
         G.nodes[node["label"]]['isPaper'] = False
-        
+
     G.nodes["paper"]['isPaper'] = True
-        
-        
+
     for edge in network["edges"]:
-        G.add_edge(edge["source"],edge["target"],kind=edge["kind"],style='dashed')
-        
-        
+        G.add_edge(edge["source"], edge["target"], kind=edge["kind"], style='dashed')
+
     # create the web
     web = Web(nx_G=G)
-    
+
     web.display.showNodeNames = True
     web.display.colorBy = 'isPaper'
 
     web.show()
-    
+
+
 def get_coverage(cso, found_topics):
     """Function that for a given topics, it returns its coverage.
     This coverage is computed based on how many its descendants have been identified.
@@ -516,21 +502,20 @@ def get_coverage(cso, found_topics):
     Returns:
         coverage (dictionary): = {"topic":percentage value} contains all found topics with their percentage of coverage.
     """
-    
+
     coverage = {}
-    
+
     if type(found_topics) is dict:
         list_of_topics = []
         for key, value in found_topics.items():
             list_of_topics += value
-        
+
         list_of_topics = list(set(list_of_topics))
     elif type(found_topics) is list:
         list_of_topics = found_topics
-        
-    
+
     t_id = 0
-    pos = {}     
+    pos = {}
     topics = []
     for topic in list_of_topics:
         if topic in cso["topics"]:
@@ -538,12 +523,12 @@ def get_coverage(cso, found_topics):
             pos[topic] = t_id
             pos[t_id] = topic
             t_id += 1
-        else: 
-            print("Asked to process '",topic,"', but I couldn't find it in the current version of the Ontology")
-    
-    matrix = np.zeros((len(topics),len(topics)), dtype=int)
+        else:
+            print("Asked to process '", topic, "', but I couldn't find it in the current version of the Ontology")
+
+    matrix = np.zeros((len(topics), len(topics)), dtype=int)
     np.fill_diagonal(matrix, 1)
-    
+
     from collections import deque
     queue = deque()
     for topic in topics:
@@ -554,20 +539,17 @@ def get_coverage(cso, found_topics):
                 broaders = cso["broaders"][dequeued]
                 for broader in broaders:
                     if broader in pos:
-                        matrix[pos[topic]][pos[broader]] = 1#dequeued["d"]
+                        matrix[pos[topic]][pos[broader]] = 1  # dequeued["d"]
                     queue.append(broader)
-    
-    
-    
-    dividend = len(topics) #or np.sum(matrix)
-    
-    if(dividend > 0):
-        general_coverage = np.sum(matrix,axis=0)
-        
+
+    dividend = len(topics)  # or np.sum(matrix)
+
+    if (dividend > 0):
+        general_coverage = np.sum(matrix, axis=0)
+
         for topic in topics:
-            coverage[topic] = round(general_coverage[pos[topic]]/dividend,3)
+            coverage[topic] = round(general_coverage[pos[topic]] / dividend, 3)
     else:
         print("I was about to perform a divide by zero operation")
-        
+
     return coverage
-    
