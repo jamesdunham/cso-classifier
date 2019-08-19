@@ -37,13 +37,13 @@ class CSOClassifierSemantic:
             model = {}
         if cso is None:
             cso = {}
-        if paper is None:
-            paper = {}
         self.cso = cso  # Stores the CSO Ontology
-        self.paper = {}  # Paper to analyse
+        if paper is None:
+            self.paper = {}
+        else:
+            self.set_paper(paper)  # Initialises the paper
         self.ngrammerger = model  # contains the cached model
         self.merge_bigrams = True  # Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
-        self.set_paper(paper)  # Initialises the paper
 
     def set_paper(self, paper):
         """Function that initializes the paper variable in the class.
@@ -60,10 +60,11 @@ class CSOClassifierSemantic:
             if isinstance(paper.get('keywords'), list):
                 paper['keywords'] = ', '.join(paper['keywords'])
             expected_fields = ['title', 'abstract', 'keywords']
-            self.paper = '. '.join((paper.get(field) for field in expected_fields))
+            field_text = (paper.get(field) for field in expected_fields)
+            self.paper = '. '.join((text for text in field_text if text))
         else:
             raise TypeError('Pass paper as a string or dict that maps "title", "abstract", and "keywords" to strings')
-        assert self.paper, 'No paper text found'
+        assert self.paper, 'No paper text found: {}'.format(paper)
 
     def classify_semantic(self):
         """Function that classifies the paper on a semantic level. This semantic module follows four steps: 

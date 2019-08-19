@@ -32,13 +32,13 @@ class CSOClassifierSyntactic:
         """
         # Initialise variables to store CSO data - loads into memory 
         if paper is None:
-            paper = {}
+            self.paper = {}
+        else:
+            self.set_paper(paper)
         if cso is None:
             cso = {}
         self.cso = cso
         self.min_similarity = 0.94
-        self.paper = {}
-        self.set_paper(paper)
 
     def set_paper(self, paper):
         """Function that initializes the paper variable in the class.
@@ -55,7 +55,8 @@ class CSOClassifierSyntactic:
             if isinstance(paper.get('keywords'), list):
                 paper['keywords'] = ', '.join(paper['keywords'])
             expected_fields = ['title', 'abstract', 'keywords']
-            self.paper = '. '.join((paper.get(field) for field in expected_fields))
+            field_text = (paper.get(field) for field in expected_fields)
+            self.paper = '. '.join((text for text in field_text if text))
         else:
             raise TypeError('Pass paper as a string or dict that maps "title", "abstract", and "keywords" to strings')
         assert self.paper, 'No paper text found'
