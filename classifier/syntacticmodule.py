@@ -15,7 +15,7 @@ from nltk.tokenize import word_tokenize
 class CSOClassifierSyntactic:
     """ An simple abstraction layer for using CSO classifier """
 
-    def __init__(self, cso={}, paper={}):
+    def __init__(self, cso=None, paper=None):
         """Function that initialises an object of class CSOClassifierSyntactic and all its members.
 
         Args:
@@ -24,6 +24,10 @@ class CSOClassifierSyntactic:
 
         """
         # Initialise variables to store CSO data - loads into memory 
+        if paper is None:
+            paper = {}
+        if cso is None:
+            cso = {}
         self.cso = cso
         self.min_similarity = 0.94
         self.paper = {}
