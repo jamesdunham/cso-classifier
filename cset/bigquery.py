@@ -20,7 +20,7 @@ def run_query(sql):
 
 
 def flatten_row(row):
-    keywords = ', '.join([kw.replace(',', '') for kw in row['keywords']])
+    keywords = ', '.join([kw.replace(',', '') for kw in row.get('keywords', [])])
     paper = dict(row)
     paper.update(keywords=keywords)
     return paper.pop('id'), paper
