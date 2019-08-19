@@ -5,18 +5,17 @@ Created on Thu Nov 22 09:09:10 2018
 
 @author: angelosalatino
 """
-from nltk.tokenize import RegexpTokenizer
-from nltk.corpus import stopwords
-from nltk import ngrams
-from nltk.tokenize import word_tokenize
 import Levenshtein.StringMatcher as ls
-
+from nltk import ngrams
+from nltk.corpus import stopwords
+from nltk.tokenize import RegexpTokenizer
+from nltk.tokenize import word_tokenize
 
 
 class CSOClassifierSyntactic:
     """ An simple abstraction layer for using CSO classifier """
 
-    def __init__(self, cso = {}, paper = {}):
+    def __init__(self, cso={}, paper={}):
         """Function that initialises an object of class CSOClassifierSyntactic and all its members.
 
         Args:
@@ -29,7 +28,7 @@ class CSOClassifierSyntactic:
         self.min_similarity = 0.94
         self.paper = {}
         self.set_paper(paper)
-    
+
     def set_paper(self, paper):
         """Function that initializes the paper variable in the class.
 
@@ -43,25 +42,23 @@ class CSOClassifierSyntactic:
             if isinstance(paper, dict):
                 t_paper = paper
                 self.paper = ""
-                try: 
+                try:
                     for key in list(t_paper.keys()):
                         self.paper = self.paper + t_paper[key] + ". "
                 except TypeError:
                     pass
                     print(paper)
-        
-                
+
                 self.paper = self.paper.strip()
             elif isinstance(paper, str):
                 self.paper = paper.strip()
-            
+
             else:
                 raise TypeError("Error: Field format must be either 'json' or 'text'")
                 return
         except TypeError:
             pass
-        
-    
+
     def set_min__similarity(self, msm):
         """Function that sets a different value for the similarity.
 
@@ -86,7 +83,6 @@ class CSOClassifierSyntactic:
             found_topics (dictionary): containing the found topics with their similarity and the n-gram analysed.
         """
 
-
         # pre-processing
         paper = self.paper.lower()
         tokenizer = RegexpTokenizer(r'[\w\-\(\)]*')
@@ -96,14 +92,13 @@ class CSOClassifierSyntactic:
 
         # analysing similarity with terms in the ontology
         extracted_topics = self.statistic_similarity(paper, self.min_similarity)
-        
+
         topics = {}
         topics = self.strip_explanation(extracted_topics)
-        
-        
+
         return topics
 
-        #shared_dict = topics
+        # shared_dict = topics
 
     def statistic_similarity(self, paper, min_similarity):
         """Function that splits the paper text in n-grams (unigrams,bigrams,trigrams)
@@ -119,7 +114,7 @@ class CSOClassifierSyntactic:
 
         # analysing grams
         found_topics = {}
-        
+
         idx = 0
         trigrams = ngrams(word_tokenize(paper, preserve_line=True), 3)
         matched_trigrams = []
@@ -136,14 +131,13 @@ class CSOClassifierSyntactic:
                     else:
                         found_topics[topic] = [{'matched': gram, 'similarity': m}]
                     matched_trigrams.append(idx)
-            
-        
+
         idx = 0
         bigrams = ngrams(word_tokenize(paper, preserve_line=True), 2)
         matched_bigrams = []
         for grams in bigrams:
             idx += 1
-            if (idx not in matched_trigrams) and ((idx-1) not in matched_trigrams):
+            if (idx not in matched_trigrams) and ((idx - 1) not in matched_trigrams):
                 gram = " ".join(grams)
                 topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
                 for topic in topics:
@@ -155,13 +149,14 @@ class CSOClassifierSyntactic:
                         else:
                             found_topics[topic] = [{'matched': gram, 'similarity': m}]
                         matched_bigrams.append(idx)
-            
 
         idx = 0
         unigrams = ngrams(word_tokenize(paper, preserve_line=True), 1)
         for grams in unigrams:
             idx += 1
-            if (idx not in matched_trigrams) and ((idx-1) not in matched_trigrams) and (idx not in matched_bigrams) and ((idx-1) not in matched_bigrams) and ((idx-1) not in matched_bigrams):
+            if (idx not in matched_trigrams) and ((idx - 1) not in matched_trigrams) and (
+                    idx not in matched_bigrams) and ((idx - 1) not in matched_bigrams) and (
+                    (idx - 1) not in matched_bigrams):
                 gram = " ".join(grams)
                 topics = [key for key, _ in self.cso['topics'].items() if key.startswith(gram[:4])]
                 for topic in topics:
@@ -172,11 +167,8 @@ class CSOClassifierSyntactic:
                             found_topics[topic].append({'matched': gram, 'similarity': m})
                         else:
                             found_topics[topic] = [{'matched': gram, 'similarity': m}]
-            
 
         return found_topics
-    
-
 
     def strip_explanation(self, found_topics):
         """Function that removes statistical values from the dictionary containing the found topics.
@@ -188,13 +180,10 @@ class CSOClassifierSyntactic:
         Returns:
             topics (array): array containing the list of topics.
         """
-        
-        
-        topics = list(set(found_topics.keys()))  # Takes only the keys
-        
-        return topics
-    
 
+        topics = list(set(found_topics.keys()))  # Takes only the keys
+
+        return topics
 
     def get_primary_label(self, topic, primary_labels):
         """Function that returns the primary (preferred) label for a topic. If this topic belongs to 
@@ -207,10 +196,10 @@ class CSOClassifierSyntactic:
         Returns:
             topic (string): primary label of the analysed topic.
         """
-        
+
         try:
             topic = primary_labels[topic]
         except KeyError:
             pass
-        
+
         return topic
