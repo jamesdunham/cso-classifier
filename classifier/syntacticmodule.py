@@ -48,23 +48,17 @@ class CSOClassifierSyntactic:
             is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
 
         """
-
-        try:
-            if isinstance(paper, dict):
-                t_paper = paper
-                self.paper = ""
-                try:
-                    for key in list(t_paper.keys()):
-                        self.paper = self.paper + t_paper[key] + ". "
-                except TypeError as e:
-                    logger.error('{}: {}'.format(e, paper))
-                self.paper = self.paper.strip()
-            elif isinstance(paper, str):
-                self.paper = paper.strip()
-            else:
-                raise TypeError("Error: Field format must be either 'json' or 'text'")
-        except TypeError as e:
-            logger.error('{}: {}'.format(e, paper))
+        if isinstance(paper, str):
+            self.paper = paper.strip()
+        elif isinstance(paper, dict):
+            # Handle keywords passed as a list
+            if isinstance(paper.get('keywords'), list):
+                paper['keywords'] = ', '.join(paper['keywords'])
+            expected_fields = ['title', 'abstract', 'keywords']
+            self.paper = '. '.join((paper.get(field) for field in expected_fields))
+        else:
+            raise TypeError('Pass paper as a string or dict that maps "title", "abstract", and "keywords" to strings')
+        assert self.paper, 'No paper text found'
 
     def set_min__similarity(self, msm):
         """Function that sets a different value for the similarity.
