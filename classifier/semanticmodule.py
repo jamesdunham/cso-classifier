@@ -16,7 +16,7 @@ from nltk import everygrams
 
 class CSOClassifierSemantic:
 
-    def __init__(self, model={}, cso={}, paper={}):
+    def __init__(self, model=None, cso=None, paper=None):
         """Function that initialises an object of class CSOClassifierSemantic and all its members.
 
         Args:
@@ -27,6 +27,12 @@ class CSOClassifierSemantic:
             
         """
 
+        if model is None:
+            model = {}
+        if cso is None:
+            cso = {}
+        if paper is None:
+            paper = {}
         self.cso = cso  # Stores the CSO Ontology
         self.paper = {}  # Paper to analyse
         self.ngrammerger = model  # contains the cached model
