@@ -6,10 +6,11 @@ result to the `demo` directory as `demo-predictions.json`.
 """
 import argparse
 import json
+from pathlib import Path
 
 from classifier.classifier import run_cso_classifier_batch_mode
-from demo.bigquery import run_query
-from demo.settings import INPUT_PATH, OUTPUT_PATH
+from cset.bigquery import run_query, flatten_row
+from demo.settings import INPUT_PATH, OUTPUT_PATH, DEMO_DIR
 
 
 def load_input() -> dict:
@@ -32,6 +33,10 @@ def write_output(predictions: dict, papers: dict) -> None:
 def main() -> None:
     """Demonstrate the CSO Classifier on some CS articles in Web of Science."""
     papers = load_input()
+    # This is a SQL query for BigQuery that joins titles, abstracts, and keywords from  Web of Science
+    sql = Path(DEMO_DIR, 'query.sql').read_text()
+    result = run_query(sql)
+    papers = dict(flatten_row(row) for row in result)
     predictions = run_cso_classifier_batch_mode(papers, workers=4)
     write_output(predictions, papers)
 

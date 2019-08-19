@@ -65,7 +65,7 @@ def batch_predict(papers, output_path, workers=4):
                        semantic_classifier=semantic_classifier)
     with open(output_path, 'at') as output:
         with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-            with tqdm(total=len(papers)) as pbar:
+            with tqdm() as pbar:
                 # Map futures to papers (this doesn't block)
                 future_predictions = {executor.submit(_predict, paper.__dict__): paper.id for paper in papers}
                 # Generate predictions in order of completion
