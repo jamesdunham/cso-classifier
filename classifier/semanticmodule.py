@@ -60,19 +60,15 @@ class CSOClassifierSemantic:
                 try:
                     for key in list(t_paper.keys()):
                         self.paper = self.paper + t_paper[key] + ". "
-                except TypeError:
-                    pass
-                    print(paper)
-
+                except TypeError as e:
+                    logger.error('{}: {}'.format(e, paper))
                 self.paper = self.paper.strip()
             elif isinstance(paper, str):
                 self.paper = paper.strip()
-
             else:
                 raise TypeError("Error: Field format must be either 'json' or 'text'")
-                return
-        except TypeError:
-            pass
+        except TypeError as e:
+            logger.error('{}: {}'.format(e, paper))
 
     def classify_semantic(self):
         """Function that classifies the paper on a semantic level. This semantic module follows four steps: 
