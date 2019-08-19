@@ -110,5 +110,5 @@ GCP-*.json
 gcp-*.json
 
 # input and output files containing Web of Science data
-demo/demo-inputs.jsonl
-demo/demo-predictions.jsonl
+demo/demo-inputs.json
+demo/demo-predictions.json

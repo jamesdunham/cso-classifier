@@ -2,7 +2,7 @@
 Demonstrate the CSO Classifier on some CS articles in Web of Science.
 
 We fetch a set of paper titles, abstracts and keywords from BigQuery, run the CSO Classifier over them, and write the
-result to the `demo` directory as `demo-predictions.jsonl`.
+result to the `demo` directory as `demo-predictions.json`.
 """
 import argparse
 import json
@@ -12,7 +12,7 @@ from demo.bigquery import run_query
 from demo.settings import INPUT_PATH, OUTPUT_PATH
 
 
-def load_input():
+def load_input() -> dict:
     """Read the classifier inputs from the disk, if already fetched; otherwise request from BigQuery."""
     if not INPUT_PATH.exists():
         print('Fetching from BigQuery')
@@ -22,14 +22,14 @@ def load_input():
     return papers
 
 
-def write_output(predictions, papers):
+def write_output(predictions: dict, papers: dict) -> None:
     """Write predictions merged with original inputs to the disk."""
     for wos_id, prediction in predictions.items():
         prediction.update(**papers[wos_id])
     OUTPUT_PATH.write_text(json.dumps(predictions, indent='  ', sort_keys=True))
 
 
-def main():
+def main() -> None:
     """Demonstrate the CSO Classifier on some CS articles in Web of Science."""
     papers = load_input()
     predictions = run_cso_classifier_batch_mode(papers, workers=4)

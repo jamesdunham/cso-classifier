@@ -10,7 +10,21 @@ This demo fetches a set of CS paper titles, abstracts, and keywords from Web of 
 - Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of that keyfile, which will look like `"GCP-CSET Projects-b314d1aa5d86.json"`
 - Run `python main.py` (e.g., `GOOGLE_APPLICATION_CREDENTIALS='gcp-cset-projects-b314d1aa5d86.json' python main.py`)
 
-Predictions are written to `demo/demo-predictions.jsonl`.
+### Inputs
+
+The classifier takes a dictionary like:
+
+```JSON
+{
+  "{unique id, as string}": {
+    "title": "{title, as string}",
+    "keywords": "{comma-delimited keywords, as string}",
+    "abstract_text": "{abstract, as string}"
+  }
+}
+
+```
+Predictions are written to `demo/demo-predictions.json`.
 An excerpt of that file is below, with Web of Science data (`title`, `abstract_text`, `keywords`) omitted:
 
 ```JSON
