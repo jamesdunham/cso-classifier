@@ -5,11 +5,18 @@ Created on Thu Nov 22 09:09:10 2018
 
 @author: angelosalatino
 """
+import logging
+import os
+
 import Levenshtein.StringMatcher as ls
 from nltk import ngrams
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from nltk.tokenize import word_tokenize
+
+logger = logging.getLogger(__name__)
+log_level = os.getenv('LOG_LEVEL', 'DEBUG')
+logger.setLevel(getattr(logging, log_level))
 
 
 class CSOClassifierSyntactic:

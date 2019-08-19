@@ -5,6 +5,8 @@ Created on Thu Nov 22 11:38:18 2018
 
 @author: angelosalatino
 """
+import logging
+import os
 import re
 import warnings
 
@@ -12,6 +14,10 @@ import nltk
 import spacy
 from kneed import KneeLocator
 from nltk import everygrams
+
+logger = logging.getLogger(__name__)
+log_level = os.getenv('LOG_LEVEL', 'DEBUG')
+logger.setLevel(getattr(logging, log_level))
 
 
 class CSOClassifierSemantic:
@@ -24,7 +30,7 @@ class CSOClassifierSemantic:
             cso (dictionary): Computer Science Ontology
             paper (dictionary): paper{"title":"...","abstract":"...","keywords":"..."} the paper.
 
-            
+
         """
 
         if model is None:
