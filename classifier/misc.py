@@ -264,8 +264,6 @@ def climb_ontology(cso, found_topics, climb_ont):
         Args:
             found_topics (dictionary): It contains the topics found with string similarity.
             cso (dictionary): the ontology previously loaded from the file.
-            num_narrower (integer): it defines the number of narrower topics before their broader topic gets included
-            in the final set of topics. Default = 1.
             climb_ont (string): either "first" or "all" for selecting "just the first broader topic" or climbing
             the "whole tree".
         Returns:
