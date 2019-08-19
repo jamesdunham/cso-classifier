@@ -1,5 +1,3 @@
-# CSO Classifier
-
 ## CSET demo
 
 This demo fetches a set of CS paper titles, abstracts, and keywords from Web of Science BigQuery tables, and runs the CSO Classifier over them.
@@ -56,6 +54,40 @@ An excerpt of that file is below, with Web of Science data (`title`, `abstract_t
 }
 ```
 
+## Abstract
+
+Classifying research papers according to their research topics is an important task to improve their retrievability, assist the creation of smart analytics, and support a variety of approaches for analysing and making sense of the research environment. In this repository, we present the CSO Classifier, a new unsupervised approach for automatically classifying research papers according to the [Computer Science Ontology (CSO)](https://cso.kmi.open.ac.uk), a comprehensive ontology of research areas in the field of Computer Science. The CSO Classifier takes as input the metadata associated with a research paper (title, abstract, keywords) and returns a selection of research concepts drawn from the ontology. The approach was evaluated on a gold standard of manually annotated articles yielding a significant improvement over alternative methods.
+
+## Table of contents
+
+<!--ts-->
+* [Abstract](#abstract)
+* [Table of contents](#table-of-contents)
+* [About](#about)
+* [Getting started](#getting-started)
+  * [Installation using PIP](#installation-using-pip)
+  * [Installation using Github](#installation-using-github)
+* [Usage examples](#usage-examples)
+  * [Classifying a single paper (SP)](#classifying-a-single-paper-sp)
+  * [Classifying in batch mode (BM)](#classifying-in-batch-mode-bm)
+  * [Parameters](#parameters)
+* [Releases](#releases)
+  * [v2.3.2](#v232)
+  * [v2.3.1](#v231)
+  * [v2.3](#v23)
+  * [v2.2](#v22)
+  * [v2.1](#v21)
+  * [v2.0](#v20)
+  * [v1.0](#v10)
+* [List of Files](#list-of-files)
+* [Word2vec model and token-to-cso-combined file generation](#word2vec-model-and-token-to-cso-combined-file-generation)
+  * [Word Embedding generation](#word-embedding-generation)
+  * [token-to-cso-combined file](#token-to-cso-combined-file)
+* [How to Cite CSO Classifier](#how-to-cite-cso-classifier)
+* [License](#license)
+* [References](#references)
+<!--te-->
+
 ## About
 
 The CSO Classifier is a novel application that takes as input the text from abstract, title, and keywords of a research paper and outputs a list of relevant concepts from CSO. It consists of two main components: (i) the syntactic module and (ii) the semantic module. Figure 1 depicts its architecture. The syntactic module parses the input documents and identifies CSO concepts that are explicitly referred in the document. The semantic module uses part-of-speech tagging to identify promising terms and then exploits word embeddings to infer semantically related topics. Finally, the CSO Classifier combines the results of these two modules and enhances them by including relevant super-areas.
@@ -84,6 +116,31 @@ Beside the paper(s), the function running the CSO Classifier accepts three addit
 ## Releases
 
 Here we list the available releases for the CSO Classifier. These releases are available for download both from [Github](https://github.com/angelosalatino/cso-classifier/releases) and [Zenodo](10.5281/zenodo.2660819).
+
+### v2.3.2
+
+Version alignement with Pypi. Similar to version 2.3.1.
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3357768.svg)](https://doi.org/10.5281/zenodo.3357768)
+
+
+### v2.3.1
+
+Bug Fix. Added some exception handles. 
+**Notice:** *Please note that during the uplaod of this version on Pypi (python index), we encountered some issues. We can't guarantee this version will work properly. To this end, we created a new release: v2.3.2. Use this one, please. Apologies for any inconvenience.*
+
+### v2.3
+This new release, contains a bug fix and the latest version of the CSO ontology.
+
+Bug Fix: When running in batch mode, the classifier was treating the keyword field as an array instead of string. In this way, instead of processing keywords (separated by comma), it was processing each single letters, hence inferring wrong topics. This now has been fixed. In addition, if the keyword field is actually an array, the classifier will first 'stringify' it and then process it.
+
+We also downloaded and packed the latest version of the CSO ontology.
+
+Download from:
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3355629.svg)](https://doi.org/10.5281/zenodo.3355629)
 
 ### v2.2
 In this version (release v2.2), we (i) updated the requirements needed to run the classifier, (ii) removed all unnecessary warnings, and (iii) enabled multiprocessing. In particular, we removed all useless requirements that were installed in development mode, by cleaning the _requirements.txt_ file. 
@@ -164,6 +221,9 @@ To this end, we decided to create a cached model (**token-to-cso-combined.json**
 
 To generate this file, we collected all the set of words available within the vocabulary of the model. Then iterating on each word, we retrieved its top 10 similar words from the model, and we computed their Levenshtein similarity against all CSO topics. If the similarity was above 0.7, we created a record which stored all CSO topics triggered by the initial word.
 
+## How to Cite CSO Classifier
+
+Salatino, A.A., Osborne, F., Thanapalasingam, T., Motta, E.: The CSO Classifier: Ontology-Driven Detection of Research Topics in Scholarly Articles. In: TPDL 2019: 23rd International Conference on Theory and Practice of Digital Libraries. Springer.
 
 ## License
 

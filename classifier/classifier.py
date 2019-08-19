@@ -13,7 +13,7 @@ def run_cso_classifier(paper, modules="both", enhancement="first"):
     It takes as input the text from abstract, title, and keywords of a research paper and outputs a list of relevant
     concepts from CSO.
 
-    This function requires the paper (please note, one single paper, no batch mode) and few flags: 
+    This function requires the paper (please note, one single paper, no batch mode) and few flags:
         (i) modules, determines whether to run only the syntactic module, or the semantic module, or both;
         (ii) enhancement, controls whether the classifier should infer super-topics, i.e., their first direct
         super-topics or the whole set of topics up until root.
@@ -175,10 +175,13 @@ def run_cso_classifier_batch_model_single_worker(papers, modules="both", enhance
         paper = dict()
 
         paper["title"] = paper_value["title"] if "title" in paper_value and not paper_value["title"] is None else ""
-        paper["abstract"] = paper_value["abstract"] if "abstract" in paper_value and not \
-            paper_value["abstract"] is None else " "
-        paper["keywords"] = ', '.join(paper_value["keywords"]) if "keywords" in paper_value and not \
-            paper_value["keywords"] is None else " "
+        paper["abstract"] = paper_value["abstract"] if "abstract" in paper_value and not paper_value[
+                                                                                             "abstract"] is None else ""
+        paper["keywords"] = paper_value["keywords"] if "keywords" in paper_value and not paper_value[
+                                                                                             "keywords"] is None else ""
+        # just in case the value keywords contains an array of keywords
+        if isinstance(paper["keywords"], list):
+            paper["keywords"] = ', '.join(paper["keywords"])
 
         class_res[paper_id] = dict()
         class_res[paper_id]["syntactic"] = list()

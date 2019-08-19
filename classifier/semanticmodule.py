@@ -42,19 +42,28 @@ class CSOClassifierSemantic:
             is already merged or a dictionary  {"title": "","abstract": "","keywords": ""}.
 
         """
-        if isinstance(paper, dict):
-            t_paper = paper
-            self.paper = ""
-            for key in list(t_paper.keys()):
-                self.paper = self.paper + t_paper[key] + ". "
-                
-            self.paper = self.paper.strip()
-        elif isinstance(paper, str):
-            self.paper = paper.strip()
+        try:
+            if isinstance(paper, dict):
+                t_paper = paper
+                self.paper = ""
+                try: 
+                    for key in list(t_paper.keys()):
+                        self.paper = self.paper + t_paper[key] + ". "
+                except TypeError:
+                    pass
+                    print(paper)
         
-        else:
-            raise TypeError("Error: Field format must be either 'json' or 'text'")
-            return
+                
+                self.paper = self.paper.strip()
+            elif isinstance(paper, str):
+                self.paper = paper.strip()
+            
+            else:
+                raise TypeError("Error: Field format must be either 'json' or 'text'")
+                return
+        except TypeError:
+            pass
+        
 
  
     
@@ -162,7 +171,7 @@ class CSOClassifierSemantic:
                     sim   = topic_item["sim_w"]
                     
                     
-                    if m >= min_similarity:
+                    if m >= min_similarity and topic in self.cso["topics_wu"]:
                         
     
                         if topic in found_topics:
@@ -227,6 +236,8 @@ class CSOClassifierSemantic:
         unique_topics = {}
         for tp,topic in found_topics.items():
             prim_label = self.get_primary_label(tp,self.cso["primary_labels_wu"])
+            if prim_label == 'network_structures':
+                print('Here I found you:', tp)
             if prim_label in unique_topics:
                 if unique_topics[prim_label] < topic["score"]:
                     unique_topics[prim_label] = topic["score"]
