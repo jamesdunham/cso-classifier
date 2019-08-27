@@ -44,6 +44,8 @@ class CSOClassifierSemantic:
             self.set_paper(paper)  # Initialises the paper
         self.ngrammerger = model  # contains the cached model
         self.merge_bigrams = True  # Allows to combine the topics of mutiple tokens, when analysing 2-grams or 3-grams
+        self.nlp = spacy.load('en_core_web_sm')
+
 
     def set_paper(self, paper):
         """Function that initializes the paper variable in the class.
@@ -82,27 +84,22 @@ class CSOClassifierSemantic:
 
         ##################### Tokenizer with spaCy.io
 
-        nlp = spacy.load('en_core_web_sm')
-        doc = nlp(self.paper)
-        pos_tags_spacy = []
-        for token in doc:
-            if len(token.tag_) > 0:
-                pos_tags_spacy.append((token.text, token.tag_))
-
-        pos_tags = pos_tags_spacy
+        doc = self.nlp(self.paper)
+        pos_tags = [(token.text, token.tag_) for token in doc if token.tag_]
 
         ##################### Applying grammar
 
+        # Find adjective-noun or noun spans: JJ.* matches JJ, JJR, and JJS; NN.* matches NN, NNP, NNS
         GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}"
         grammar_parser = nltk.RegexpParser(GRAMMAR)
 
         pos_tags_with_grammar = grammar_parser.parse(pos_tags)
-        # print(pos_tags_with_grammar)
         concepts = []
         for node in pos_tags_with_grammar:
             if isinstance(node, nltk.tree.Tree) and node.label() == 'DBW_CONCEPT':  # if matches our grammar
                 concept = ''
                 for leaf in node.leaves():
+                    # leaf is an (orth, POS) pair
                     concept_chunk = leaf[0]
                     concept_chunk = re.sub('[\=\,\…\’\'\+\-\–\“\”\"\/\‘\[\]\®\™\%]', ' ', concept_chunk)
                     concept_chunk = re.sub('\.$|^\.', '', concept_chunk)
@@ -136,11 +133,8 @@ class CSOClassifierSemantic:
                 else:
 
                     if len(grams) > 1 and self.merge_bigrams:
-
                         temp_list_of_matches = {}
-
                         list_of_merged_topics = {}
-
                         for gram in grams:
                             if gram in self.ngrammerger:
                                 list_of_matched_topics_t = self.ngrammerger[gram]

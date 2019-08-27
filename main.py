@@ -6,42 +6,78 @@ result to the `demo` directory as `demo-predictions.json`.
 """
 import argparse
 import json
+import logging
+import sys
 from pathlib import Path
 
-from classifier.classifier import run_cso_classifier_batch_mode
-from cset.bigquery import run_query, flatten_row
-from demo.settings import INPUT_PATH, OUTPUT_PATH, DEMO_DIR
+from tqdm import tqdm
+
+from classifier import misc
+from classifier.misc import climb_ontology
+from classifier.semanticmodule import CSOClassifierSemantic
+from classifier.syntacticmodule import CSOClassifierSyntactic
+from cset._semantic import classify_semantic
+from cset._syntactic import classify_syntactic
+from cset.model import Paper
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
-def load_input() -> dict:
-    """Read the classifier inputs from the disk, if already fetched; otherwise request from BigQuery."""
-    if not INPUT_PATH.exists():
-        print('Fetching from BigQuery')
-        papers = run_query()
-        INPUT_PATH.write_text(json.dumps(papers, indent='  '))
-    papers = json.loads(INPUT_PATH.read_text())
-    return papers
+def load_classifiers():
+    cso, model = misc.load_ontology_and_chached_model()
+    syntactic_classifier = CSOClassifierSyntactic(cso)
+    semantic_classifier = CSOClassifierSemantic(model, cso)
+    return cso, syntactic_classifier, semantic_classifier
 
 
-def write_output(predictions: dict, papers: dict) -> None:
-    """Write predictions merged with original inputs to the disk."""
-    for wos_id, prediction in predictions.items():
-        prediction.update(**papers[wos_id])
-    OUTPUT_PATH.write_text(json.dumps(predictions, indent='  ', sort_keys=True))
+def load_cso():
+    cso, model = misc.load_ontology_and_chached_model()
+    return cso
 
 
-def main() -> None:
-    """Demonstrate the CSO Classifier on some CS articles in Web of Science."""
-    papers = load_input()
-    # This is a SQL query for BigQuery that joins titles, abstracts, and keywords from  Web of Science
-    sql = Path(DEMO_DIR, 'query.sql').read_text()
-    result = run_query(sql)
-    papers = dict(flatten_row(row) for row in result)
-    predictions = run_cso_classifier_batch_mode(papers, workers=4)
-    write_output(predictions, papers)
+def predict(paper, cso, syntactic_classifier, semantic_classifier):
+    syntactic_classifier.set_paper(paper)
+    semantic_classifier.set_paper(paper)
+    prediction = dict(syntactic=syntactic_classifier.classify_syntactic(),
+                      semantic=semantic_classifier.classify_semantic())
+    prediction['enhanced'] = climb_ontology(cso, set(prediction['syntactic']).union(prediction['semantic']), 'all')
+    return prediction
+
+
+def predict_cset(paper: Paper, cso):
+    syntactic = classify_syntactic(paper)
+    semantic = classify_semantic(paper)
+    enhanced = climb_ontology(cso, set(syntactic).union(semantic), 'all')
+    return dict(syntactic=syntactic, semantic=semantic, enhanced=enhanced)
+
+
+def classify_cset(output_prefix='cset-predictions') -> None:
+    """Run the CSO Classifier on CS articles from Web of Science."""
+    cso = load_cso()
+    data_dir = Path(__file__).parent / 'data'
+    for path in data_dir.glob('*.jsonl'):
+        records = (json.loads(line) for line in path.open('rt'))
+        try:
+            papers = {record['id']: Paper(title=record.get('title'), keywords=record.get('keywords'),
+                                          abstract=record.get('abstract'))
+                      for record in records}
+        except KeyError as e:
+            logger.error(f'KeyError reading {path}: {e}')
+            continue
+        output_path = path.with_name('{}-{}'.format(output_prefix, path.name))
+        if output_path.exists():
+            logger.info(f'Skipping existing output {output_path}')
+            continue
+        with output_path.open('wt') as f:
+            for paper_id, paper in tqdm(papers.items()):
+                prediction = predict_cset(paper, cso)
+                prediction.update({'id': paper_id})
+                f.write(json.dumps(prediction) + '\n')
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage='Demonstrate the CSO Classifier on some CS articles in Web of Science.')
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    parser = argparse.ArgumentParser(usage='Run the CSO Classifier over CS articles from Web of Science.')
     args = parser.parse_args()
-    main()
+    classify_cset()
