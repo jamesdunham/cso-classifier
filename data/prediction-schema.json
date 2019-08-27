@@ -1,0 +1,39 @@
+[
+  {
+    "name": "id",
+    "type": "STRING",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "syntactic",
+    "type": "STRING",
+    "mode": "REPEATED"
+  },
+  {
+    "name": "semantic",
+    "type": "STRING",
+    "mode": "REPEATED"
+  },
+  {
+    "name": "enhanced",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      {
+        "name": "term",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "matched",
+        "type": "INTEGER",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "broader",
+        "type": "STRING",
+        "mode": "REPEATED"
+      }
+    ]
+  }
+]
