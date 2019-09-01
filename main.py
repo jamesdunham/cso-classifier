@@ -16,8 +16,8 @@ from classifier import misc
 from classifier.misc import climb_ontology
 from classifier.semanticmodule import CSOClassifierSemantic
 from classifier.syntacticmodule import CSOClassifierSyntactic
-from cset._semantic import classify_semantic
-from cset._syntactic import classify_syntactic
+from cset.semantic import classify_semantic
+from cset.syntactic import classify_syntactic
 from cset.model import Paper
 
 logger = logging.getLogger(__name__)
@@ -34,15 +34,6 @@ def load_classifiers():
 def load_cso():
     cso, model = misc.load_ontology_and_chached_model()
     return cso
-
-
-def predict(paper, cso, syntactic_classifier, semantic_classifier):
-    syntactic_classifier.set_paper(paper)
-    semantic_classifier.set_paper(paper)
-    prediction = dict(syntactic=syntactic_classifier.classify_syntactic(),
-                      semantic=semantic_classifier.classify_semantic())
-    prediction['enhanced'] = climb_ontology(cso, set(prediction['syntactic']).union(prediction['semantic']), 'all')
-    return prediction
 
 
 def predict_cset(paper: Paper, cso):

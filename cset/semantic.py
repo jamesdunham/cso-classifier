@@ -1,22 +1,20 @@
 import warnings
-from collections import Counter
-from dataclasses import dataclass, field
-from typing import List
 
 from kneed import KneeLocator
 from nltk import everygrams, RegexpParser
 
-from cset._classify import CSO, MODEL
-from cset._preprocess import tag_tokens
-from cset._syntactic import extract_phrases
+from cset.classify import CSO, MODEL
+from cset.preprocess import tag_tokens
 
+# This is a POS regex pattern for some number of nouns, possibly preceded by some number of adjectives
 GRAMMAR = "DBW_CONCEPT: {<JJ.*>*<NN.*>+}"
 
 
-def classify_semantic(paper, min_similarity=.96, merge=True):
+def classify_semantic(paper, min_similarity=.96):
     # Find adjective-noun or noun spans: JJ.* matches JJ, JJR, and JJS; NN.* matches NN, NNP, NNS
     pos_tags = tag_tokens(paper)
     grammar_parser = RegexpParser(GRAMMAR)
+    # RegexpParser.parse returns a parse Tree
     parse = grammar_parser.parse(list(pos_tags))
     phrases = list(extract_phrases(parse))
     topics, topic_ngrams = ngrams_to_topics(phrases, min_similarity=min_similarity)
@@ -28,11 +26,6 @@ def match_ngram(ngram, merge=True):
     if len(ngram) > 1 and merge:
         temp_list_of_matches = {}
         list_of_merged_topics = {}
-        # try:
-        #     for token_topic in MODEL[token]:
-        #         temp_list_of_matches[topic_item["topic"]] = token_topic
-        # except KeyError:
-        #     continue
         for token in ngram:
             if token in MODEL:
                 token_topics = MODEL[token]
@@ -48,27 +41,19 @@ def match_ngram(ngram, merge=True):
     return matches
 
 
-@dataclass
-class Topic:
-    topic: str
-    embedding_matched: str
-    embedding_similarity: float
-    gram_similarity: List[float] = field(default_factory=list)
-    grams = Counter()
-    times: int = 0
-
-
 def ngrams_to_topics(phrases, merge=True, min_similarity=.96):
     # Core analysis: find matches
     found_topics = {}
     successful_grams = {}
     for concept in phrases:
         for ngram in everygrams(concept.split(), 1, 3):
-            # TODO: pick between phrase and concept
+            # TODO: pick between 'phrase' and 'concept' terminology
             concept = "_".join(ngram)
             if concept in MODEL:
+                # there's an exact match for the '_'-concatenated ngram in the ontology
                 matches = MODEL[concept]
             else:
+                # we'll instead search for ontology elements proximate in vector space
                 matches = match_ngram(ngram, merge=merge)
             for match in matches:
                 topic = match["topic"]
@@ -171,3 +156,10 @@ def rank_topics(topics):
 
     final_topics = [CSO["topics_wu"][sorted_topics[i][0]] for i in range(0, knee)]
     return final_topics
+
+
+def extract_phrases(parse: Tree):
+    for node in parse:
+        if isinstance(node, Tree) and node.label() == 'DBW_CONCEPT':
+            # The tree matches the grammar
+            yield collapse_tree(node)

@@ -18,5 +18,3 @@ def tag_tokens(paper: Paper) -> str:
     for token in doc:
         if token.tag_:
             yield token.text, token.tag_
-
-

@@ -1,7 +1,7 @@
-from cset._syntactic import classify_syntactic
-from cset._semantic import classify_semantic
 from cset.model import Paper
-from cset._preprocess import clean_tokens
+from cset.preprocess import clean_tokens
+from cset.semantic import classify_semantic
+from cset.syntactic import classify_syntactic
 
 
 def test_classify_semantic():
